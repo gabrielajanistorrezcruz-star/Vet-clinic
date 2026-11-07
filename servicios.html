@@ -1,1 +1,75 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vet Clinic | Servicios</title><link rel="stylesheet" href="style.css"></head><body><div class="app"><aside class="barra-lateral"><nav class="nav"><a class="nav-btn" href="index.html">Inicio</a><a class="nav-btn" href="buscador.html">Buscador IA</a><details class="categorias-menu"><summary class="nav-btn">Categorías</summary><div class="submenu"><a href="categorias.html?tipo=perros">Perros</a><a href="categorias.html?tipo=gatos">Gatos</a><a href="categorias.html?tipo=aves">Aves</a><a href="mapa.html">Mapa de clínicas</a></div></details><div class="sidebar-box"><small>CATEGORÍA 1<br>– MAPA</small><a class="sidebar-map" href="mapa.html">Ver mapa de clínicas</a></div></nav></aside><div class="main-area"><header class="cabecera"><a class="logo" href="index.html">VET CLINIC</a><div class="perfil-mini"><span class="avatar"></span><a href="perfil.html">PERFIL</a></div></header><main class="contenido-principal"><div class="subtitulo">SERVICIOS VETERINARIOS</div><section class="services-grid standalone" id="allServices"><button class="service-card" data-category="perros gatos aves" data-service="Consulta veterinaria"><span>Consulta veterinaria</span></button><button class="service-card" data-category="perros gatos aves" data-service="Vacunación"><span>Vacunación</span></button><button class="service-card" data-category="perros gatos aves" data-service="Desparasitación"><span>Desparasitación</span></button><button class="service-card" data-category="perros gatos" data-service="Peluquería para mascotas"><span>Peluquería para mascotas</span></button></section><div id="serviceDetail" class="service-detail hidden"></div></main></div></div><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vet Clinic | Servicios</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="app">
+      <aside class="barra-lateral">
+        <nav class="nav">
+          <a class="nav-btn" href="index.html">Inicio</a>
+          <a class="nav-btn" href="buscador.html">Buscador IA</a>
+          <details class="categorias-menu">
+            <summary class="nav-btn">Categorías</summary>
+            <div class="submenu">
+              <a href="categorias.html?tipo=perros">Perros</a>
+              <a href="categorias.html?tipo=gatos">Gatos</a>
+              <a href="categorias.html?tipo=aves">Aves</a>
+              <a href="mapa.html">Mapa de clínicas</a>
+            </div>
+          </details>
+        </nav>
+      </aside>
+      <div class="main-area">
+        <header class="cabecera">
+          <a class="logo" href="index.html">VET CLINIC</a>
+          <div class="perfil-mini">
+            <span class="avatar"></span>
+            <a href="perfil.html">PERFIL</a>
+          </div>
+        </header>
+        <main class="contenido-principal">
+          <div class="subtitulo">SERVICIOS VETERINARIOS</div>
+
+          <div class="category-filters" aria-label="Filtrar servicios por categoría">
+            <button class="category-filter active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+            <button class="category-filter" type="button" data-filter="perros" aria-pressed="false">Perros</button>
+            <button class="category-filter" type="button" data-filter="gatos" aria-pressed="false">Gatos</button>
+            <button class="category-filter" type="button" data-filter="aves" aria-pressed="false">Aves</button>
+          </div>
+
+          <section class="services-grid standalone" id="allServices">
+            <button class="service-card" data-category="perros gatos" data-service="Consulta veterinaria">
+              <span>Consulta veterinaria</span>
+            </button>
+            <button class="service-card" data-category="perros gatos" data-service="Vacunación">
+              <span>Vacunación</span>
+            </button>
+            <button class="service-card" data-category="perros gatos" data-service="Desparasitación">
+              <span>Desparasitación</span>
+            </button>
+            <button class="service-card" data-category="perros gatos" data-service="Peluquería para mascotas">
+              <span>Peluquería para mascotas</span>
+            </button>
+            <button class="service-card" data-category="gatos aves" data-service="Análisis de laboratorio">
+              <span>Análisis de laboratorio</span>
+            </button>
+            <button class="service-card" data-category="perros aves" data-service="Hospitalización y cuidado intensivo">
+              <span>Hospitalización y cuidado intensivo</span>
+            </button>
+          </section>
+          <div id="serviceDetail" class="service-detail hidden" role="dialog" aria-modal="true" aria-labelledby="serviceDetailTitle" aria-hidden="true">
+            <div class="service-detail__panel" tabindex="-1">
+              <button type="button" class="service-detail__close" id="closeServiceDetail" aria-label="Cerrar ventana">&times;</button>
+              <div class="service-detail__content"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

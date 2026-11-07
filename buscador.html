@@ -1,1 +1,53 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vet Clinic | Buscador IA</title><link rel="stylesheet" href="style.css"></head><body><div class="app"><aside class="barra-lateral"><nav class="nav"><a class="nav-btn" href="index.html">Inicio</a><a class="nav-btn activo" href="buscador.html">Buscador IA</a><details class="categorias-menu"><summary class="nav-btn">Categorías</summary><div class="submenu"><a href="categorias.html?tipo=perros">Perros</a><a href="categorias.html?tipo=gatos">Gatos</a><a href="categorias.html?tipo=aves">Aves</a><a href="mapa.html">Mapa de clínicas</a><a href="categorias.html">Todos los servicios</a></div></details><div class="sidebar-box"><small>CATEGORÍA 1<br>– MAPA</small><a class="sidebar-map" href="mapa.html">Ver mapa de clínicas</a></div></nav></aside><div class="main-area"><header class="cabecera"><a class="logo" href="index.html">VET CLINIC</a><div class="perfil-mini"><span class="avatar"></span><a href="perfil.html">PERFIL</a></div></header><main class="contenido-principal"><section class="chat-layout caja"><div class="chat-heading">BUSCADOR IA</div><div class="chat-hint">Describe los síntomas de tu mascota, la raza y las características (especifica cuál es tu mascota).</div><div id="chatMessages" class="chat-messages"><div class="chat-placeholder">RESPUESTA IA</div></div><form id="chatForm" class="chat-form"><input id="chatInput" type="text" placeholder="Buscador" aria-label="Escribe tu consulta" required><button type="submit">Enviar</button></form><p class="disclaimer">La información es orientativa y no reemplaza la consulta con un veterinario.</p></section></main></div></div><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vet Clinic | Buscador IA</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="app">
+      <aside class="barra-lateral">
+        <nav class="nav">
+          <a class="nav-btn" href="index.html">Inicio</a>
+          <a class="nav-btn activo" href="buscador.html">Buscador IA</a>
+          <details class="categorias-menu">
+            <summary class="nav-btn">Categorías</summary>
+            <div class="submenu">
+              <a href="categorias.html?tipo=perros">Perros</a>
+              <a href="categorias.html?tipo=gatos">Gatos</a>
+              <a href="categorias.html?tipo=aves">Aves</a>
+              <a href="mapa.html">Mapa de clínicas</a>
+              <a href="categorias.html">Todos los servicios</a>
+            </div>
+          </details>
+        </nav>
+      </aside>
+      <div class="main-area">
+        <header class="cabecera">
+          <a class="logo" href="index.html">VET CLINIC</a>
+          <div class="perfil-mini">
+            <span class="avatar"></span>
+            <a href="perfil.html">PERFIL</a>
+          </div>
+        </header>
+        <main class="contenido-principal">
+          <section class="chat-layout caja">
+            <div class="chat-heading">BUSCADOR IA</div>
+            <div class="chat-hint">Describe los síntomas de tu mascota, la raza y las características (especifica cuál es tu mascota).</div>
+            <div id="chatMessages" class="chat-messages">
+              <div class="chat-placeholder"></div>
+            </div>
+            <form id="chatForm" class="chat-form">
+              <input id="chatInput" type="text" placeholder="Buscador" aria-label="Escribe tu consulta" required>
+              <button type="submit">Enviar</button>
+            </form>
+            <p class="disclaimer">La información es orientativa y no reemplaza la consulta con un veterinario.</p>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

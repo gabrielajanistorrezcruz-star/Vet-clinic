@@ -1,1 +1,130 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vet Clinic | Categorías</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></head><body><div class="app"><aside class="barra-lateral"><nav class="nav"><a class="nav-btn" href="index.html">Inicio</a><a class="nav-btn" href="buscador.html">Buscador IA</a><details class="categorias-menu" open><summary class="nav-btn activo">Categorías</summary><div class="submenu"><a href="categorias.html?tipo=perros">Perros</a><a href="categorias.html?tipo=gatos">Gatos</a><a href="categorias.html?tipo=aves">Aves</a><a href="mapa.html">Mapa de clínicas</a><a href="categorias.html">Todos los servicios</a></div></details><div class="sidebar-box"><small>CATEGORÍA 1<br>– MAPA</small><a class="sidebar-map" href="mapa.html">Ver mapa de clínicas</a></div></nav></aside><div class="main-area"><header class="cabecera"><a class="logo" href="index.html">VET CLINIC</a><div class="perfil-mini"><span class="avatar"></span><a href="perfil.html">PERFIL</a></div></header><main class="contenido-principal"><div class="subtitulo categorias-sub">SELECCIONA LA CATEGORÍA DESEADA</div><h1 class="titulo-categorias">CATEGORÍAS</h1><div class="category-layout"><section class="map-section"><a class="map-label" href="mapa.html">MAPA (MUESTRA LAS VETERINARIAS MÁS CERCANAS)</a><div id="miniMap" class="map-box"><a href="mapa.html">MAPA INTERACTIVO</a></div></section><div class="separador-vertical"></div><section class="services-grid" id="servicesGrid"><button class="service-card" data-category="perros" data-service="Consulta veterinaria"><img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80" alt="Perro"><span>PRODUCTO 1</span></button><button class="service-card" data-category="gatos" data-service="Vacunación"><span>PRODUCTO 2</span></button><button class="service-card" data-category="aves" data-service="Desparasitación"><span>PRODUCTO 3</span></button><button class="service-card" data-category="perros gatos" data-service="Peluquería para mascotas"><span>PRODUCTO 4</span></button></section></div><div id="serviceDetail" class="service-detail hidden"></div></main></div></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vet Clinic | Categorías</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  </head>
+  <body>
+    <div class="app">
+      <aside class="barra-lateral">
+        <nav class="nav">
+          <a class="nav-btn" href="index.html">Inicio</a>
+          <a class="nav-btn" href="buscador.html">Buscador IA</a>
+          <details class="categorias-menu" open>
+            <summary class="nav-btn activo">Categorías</summary>
+            <div class="submenu">
+              <a href="categorias.html?tipo=perros">Perros</a>
+              <a href="categorias.html?tipo=gatos">Gatos</a>
+              <a href="categorias.html?tipo=aves">Aves</a>
+              <a href="mapa.html">Mapa de clínicas</a>
+              <a href="categorias.html">Todos los servicios</a>
+            </div>
+          </details>
+        </nav>
+      </aside>
+      <div class="main-area">
+        <header class="cabecera">
+          <a class="logo" href="index.html">VET CLINIC</a>
+          <div class="perfil-mini">
+            <span class="avatar"></span>
+            <a href="perfil.html">PERFIL</a>
+          </div>
+        </header>
+        <main class="contenido-principal">
+          <div class="subtitulo categorias-sub">SELECCIONA LA CATEGORÍA DESEADA</div>
+          <h1 class="titulo-categorias">CATEGORÍAS</h1>
+
+          <div class="category-filters" aria-label="Filtrar servicios por categoría">
+            <button class="category-filter active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+            <button class="category-filter" type="button" data-filter="perros" aria-pressed="false">Perros</button>
+            <button class="category-filter" type="button" data-filter="gatos" aria-pressed="false">Gatos</button>
+            <button class="category-filter" type="button" data-filter="aves" aria-pressed="false">Aves</button>
+          </div>
+
+          <div class="category-layout">
+            <section class="map-section">
+              <a class="map-label" href="mapa.html">MAPA (MUESTRA LAS VETERINARIAS MÁS CERCANAS)</a>
+              <div id="miniMap" class="map-box">
+                <a href="mapa.html">MAPA INTERACTIVO</a>
+              </div>
+            </section>
+            <div class="separador-vertical"></div>
+            <section class="services-grid" id="servicesGrid">
+              <button class="service-card" data-category="perros gatos" data-service="Consulta veterinaria">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80" alt="Consulta veterinaria">
+                </span>
+                <span>Consulta veterinaria</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Vacunación">
+                <span class="service-card__image">
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4diKA-9lBxBqSxVmiiAilR2ytfxFj6ASZaQayhVdBnw&s=10" alt="Vacunación">
+                </span>
+                <span>Vacunación</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Desparasitación">
+                <span class="service-card__image">
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSF98lZgph-kH7vEKyuAY5UJy6ZT9Kh1a1V2rdKC1-75g&s=10" alt="Desparasitación">
+                </span>
+                <span>Desparasitación</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Peluquería para mascotas">
+                <span class="service-card__image">
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZqyPp034KmE26mscuXiovmpPgkG8GzM1MVWhRfAYBoA&s=10" alt="Peluquería para mascotas">
+                </span>
+                <span>Peluquería para mascotas</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Esterilización">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=600&q=80" alt="Esterilización">
+                </span>
+                <span>Esterilización</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Rayos X">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=600&q=80" alt="Rayos X">
+                </span>
+                <span>Rayos X</span>
+              </button>
+              <button class="service-card" data-category="gatos aves" data-service="Análisis de laboratorio">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=80" alt="Análisis de laboratorio">
+                </span>
+                <span>Análisis de laboratorio</span>
+              </button>
+              <button class="service-card" data-category="perros gatos" data-service="Cirugía menor">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1538108149393-fbbd81895977?auto=format&fit=crop&w=600&q=80" alt="Cirugía menor">
+                </span>
+                <span>Cirugía menor</span>
+              </button>
+              <button class="service-card" data-category="perros aves" data-service="Control de dermatología">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&q=80" alt="Control de dermatología">
+                </span>
+                <span>Control de dermatología</span>
+              </button>
+              <button class="service-card" data-category="perros aves" data-service="Hospitalización y cuidado intensivo">
+                <span class="service-card__image">
+                  <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80" alt="Hospitalización y cuidado intensivo">
+                </span>
+                <span>Hospitalización y cuidado intensivo</span>
+              </button>
+            </section>
+          </div>
+          <div id="serviceDetail" class="service-detail hidden" role="dialog" aria-modal="true" aria-labelledby="serviceDetailTitle" aria-hidden="true">
+            <div class="service-detail__panel" tabindex="-1">
+              <button type="button" class="service-detail__close" id="closeServiceDetail" aria-label="Cerrar ventana">&times;</button>
+              <div class="service-detail__content"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

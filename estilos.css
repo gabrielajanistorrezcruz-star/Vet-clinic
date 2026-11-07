@@ -3,6 +3,8 @@
    Sin tamaños fijos en px para anchos/alturas.
    ========================================================= */
 
+@import url('https://fonts.googleapis.com/css2?family=Story+Script&display=swap');
+
 /* ---------- Variables ---------- */
 :root {
   --color-borde: #000;
@@ -12,7 +14,7 @@
   --grosor-borde: 0.14rem;
   --radio: 1.2rem;
   --espacio: clamp(0.6rem, 2vw, 1.5rem);
-  --fuente: "Kalam", "Comic Sans MS", "Segoe Print", cursive;
+  --fuente: 'Story Script', cursive;
 }
 
 /* ---------- Reinicio básico ---------- */
