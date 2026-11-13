@@ -338,73 +338,294 @@ function setupMap(id) {
 setupMap('clinicMap');
 setupMap('miniMap');
 
-// Chat con backend seguro y respuesta en streaming
+// Chat con backend seguro y respuesta en streaming (SSE)
 const chatForm = document.querySelector('#chatForm');
 
 if (chatForm) {
   const input = document.querySelector('#chatInput');
   const messages = document.querySelector('#chatMessages');
-  let history = [];
+  const submitButton = chatForm.querySelector('button[type="submit"]');
 
-  function bubble(role, text) {
+  const MAX_MESSAGE_LENGTH = 4000;
+  const MAX_HISTORY_MESSAGES = 20;
+  const REQUEST_TIMEOUT_MS = 120000;
+  const GENERIC_ERROR =
+    'No se pudo conectar con el asistente. Comprueba tu conexión e inténtalo de nuevo.';
+
+  // El backend Express escucha en el puerto 3000. Si la página se abre con
+  // Live Server (5500) o desde otro puerto, hay que apuntar la petición allí.
+  // Si la página ya la sirve el propio Express, basta con la ruta relativa.
+  const API_BASE = (() => {
+    const configured = (window.VET_CLINIC_API_BASE || '').trim();
+    if (configured) return configured.replace(/\/+$/, '');
+
+    const isHttp = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+    if (isHttp) {
+      if (window.location.port === '3000') return '';
+      return `${window.location.protocol}//${window.location.hostname}:3000`;
+    }
+
+    return 'http://localhost:3000';
+  })();
+
+  const CHAT_ENDPOINT = `${API_BASE}/api/chat`;
+
+  const STATUS_MESSAGES = {
+    400: 'La solicitud no es válida. Revisa el mensaje e inténtalo de nuevo.',
+    401: 'No se pudo autenticar con el asistente. Revisa la configuración del servicio.',
+    402: 'El servicio de inteligencia artificial no tiene créditos disponibles en este momento.',
+    403: 'No se pudo autenticar con el asistente. Revisa la configuración del servicio.',
+    404: 'El modelo configurado no está disponible. Revisa la configuración del servidor.',
+    408: 'El asistente tardó demasiado en responder. Inténtalo de nuevo.',
+    413: 'El mensaje es demasiado largo. Acórtalo e inténtalo de nuevo.',
+    429: 'El asistente está recibiendo demasiadas solicitudes. Espera unos segundos e inténtalo de nuevo.',
+    500: 'El asistente no está disponible en este momento. Inténtalo de nuevo en unos instantes.',
+    502: 'No se pudo conectar con el asistente. Comprueba tu conexión e inténtalo de nuevo.',
+    503: 'El asistente no está configurado en este momento. Revisa la configuración del servidor.',
+    504: 'El asistente tardó demasiado en responder. Inténtalo de nuevo.',
+  };
+
+  let history = [];
+  let isSending = false;
+
+  function trimHistory(list) {
+    const trimmed = list.slice(-MAX_HISTORY_MESSAGES);
+    while (trimmed.length && trimmed[0].role !== 'user') trimmed.shift();
+    return trimmed;
+  }
+
+  function bubble(role, text, options = {}) {
     const b = document.createElement('div');
     b.className = `chat-bubble ${role}`;
     b.textContent = text;
+    if (options.alert) b.setAttribute('role', 'alert');
     messages.appendChild(b);
     messages.scrollTop = messages.scrollHeight;
     return b;
   }
 
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  function showError(text) {
+    const errorBubble = bubble('assistant', text || GENERIC_ERROR, { alert: true });
+    errorBubble.dataset.error = 'true';
+    return errorBubble;
+  }
 
-    const prompt = input.value.trim();
-    if (!prompt) return;
+  // Procesa líneas SSE ya recibidas. Devuelve el resto incompleto del buffer.
+  function parseSSEBuffer(buffer, onEvent) {
+    let remaining = buffer;
+    let newlineIndex;
 
-    messages.querySelector('.chat-placeholder')?.remove();
-    bubble('user', prompt);
-    history.push({ role: 'user', content: prompt });
-    input.value = '';
-    input.disabled = true;
+    while ((newlineIndex = remaining.indexOf('\n')) !== -1) {
+      let line = remaining.slice(0, newlineIndex);
+      remaining = remaining.slice(newlineIndex + 1);
 
-    const reply = bubble('assistant', 'Pensando…');
+      if (line.endsWith('\r')) line = line.slice(0, -1);
+      if (!line.startsWith('data:')) continue;
+
+      const data = line.slice(5).trim();
+      if (!data) continue;
+
+      if (onEvent(data) === true) return remaining;
+    }
+
+    return remaining;
+  }
+
+  // Devuelve true cuando se recibe el marcador final [DONE].
+  function handleEventData(data, onDelta) {
+    if (data === '[DONE]') return true;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      return false;
+    }
+
+    if (parsed && typeof parsed.error === 'string') {
+      throw new Error(parsed.error);
+    }
+
+    if (parsed && typeof parsed.content === 'string' && parsed.content) {
+      onDelta(parsed.content);
+    }
+
+    return false;
+  }
+
+  async function readStream(response, onDelta) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finished = false;
 
     try {
-      const response = await fetch('/api/chat', {
+      while (!finished) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        buffer = parseSSEBuffer(buffer, (data) => {
+          if (handleEventData(data, onDelta)) finished = true;
+          return finished;
+        });
+      }
+
+      buffer += decoder.decode();
+
+      if (!finished && buffer.trim()) {
+        parseSSEBuffer(`${buffer}\n`, (data) => handleEventData(data, onDelta));
+      }
+    } finally {
+      try {
+        await reader.cancel();
+      } catch {
+        /* La conexión ya estaba cerrada. */
+      }
+      reader.releaseLock?.();
+    }
+  }
+
+  async function getErrorMessage(response) {
+    const fallback = STATUS_MESSAGES[response.status] || GENERIC_ERROR;
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+
+    if (!contentType.includes('application/json')) return fallback;
+
+    try {
+      const data = await response.json();
+      if (data && typeof data.error === 'string' && data.error.trim()) {
+        return data.error.trim();
+      }
+    } catch {
+      /* Se usa el mensaje genérico. */
+    }
+
+    return fallback;
+  }
+
+  function friendlyError(error) {
+    if (!error) return GENERIC_ERROR;
+
+    if (error.name === 'AbortError') {
+      return 'El asistente tardó demasiado en responder. Inténtalo de nuevo.';
+    }
+
+    if (error instanceof TypeError) return GENERIC_ERROR;
+
+    const message = String(error.message || '').trim();
+    if (!message) return GENERIC_ERROR;
+    if (/failed to fetch|network|load failed|fetch/i.test(message)) return GENERIC_ERROR;
+
+    return message;
+  }
+
+  // Convierte el Markdown más habitual en texto plano legible.
+  // Las burbujas usan textContent, así que sin esto se verían los asteriscos.
+  function toPlainText(text) {
+    return String(text)
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/`([^`\n]+)`/g, '$1')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/\*{2,}/g, '')
+      .replace(/_{3,}/g, '');
+  }
+
+  chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (isSending) return;
+
+    const prompt = input.value.trim();
+    if (!prompt) {
+      input.focus();
+      return;
+    }
+
+    messages.querySelector('.chat-placeholder')?.remove();
+
+    if (prompt.length > MAX_MESSAGE_LENGTH) {
+      showError(
+        `El mensaje es demasiado largo. Usa como máximo ${MAX_MESSAGE_LENGTH} caracteres.`
+      );
+      return;
+    }
+
+    const userMessage = { role: 'user', content: prompt };
+    const outgoing = trimHistory([...history, userMessage]);
+
+    bubble('user', prompt);
+    input.value = '';
+    input.focus();
+
+    isSending = true;
+    if (submitButton) submitButton.disabled = true;
+    chatForm.setAttribute('aria-busy', 'true');
+    messages.setAttribute('aria-busy', 'true');
+
+    const reply = bubble('assistant', 'Pensando…');
+    reply.setAttribute('aria-busy', 'true');
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let full = '';
+
+    try {
+      const response = await fetch(CHAT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: outgoing }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: 'No se pudo conectar con el asistente.' }));
-        throw new Error(err.error || 'Error de conexión');
+        throw new Error(await getErrorMessage(response));
       }
 
-      if (!response.body) throw new Error('El servidor no devolvió una respuesta de streaming.');
+      if (!response.body) {
+        throw new Error('El servidor no devolvió una respuesta válida. Inténtalo de nuevo.');
+      }
 
-      reply.textContent = '';
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let full = '';
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        full += chunk;
-        reply.textContent = full;
+      await readStream(response, (delta) => {
+        if (!full) {
+          reply.textContent = '';
+          reply.removeAttribute('aria-busy');
+        }
+        full += delta;
+        reply.textContent = toPlainText(full);
         messages.scrollTop = messages.scrollHeight;
+      });
+
+      const answer = toPlainText(full).trim();
+
+      if (!answer) {
+        throw new Error('El asistente no devolvió ninguna respuesta. Inténtalo de nuevo.');
       }
 
-      history.push({ role: 'assistant', content: full || 'No se recibió una respuesta.' });
-      if (!full) reply.textContent = 'No se recibió una respuesta.';
-    } catch (err) {
-      reply.textContent = `Error: ${err.message}. Verifica que el servidor esté ejecutándose y que OpenRouter esté configurado.`;
+      reply.textContent = answer;
+      history = trimHistory([...history, userMessage, { role: 'assistant', content: answer }]);
+    } catch (error) {
+      const message = friendlyError(error);
+      const partial = toPlainText(full).trim();
+
+      if (partial) {
+        // Conserva la respuesta parcial visible y en el contexto, y avisa del error.
+        reply.textContent = partial;
+        history = trimHistory([...history, userMessage, { role: 'assistant', content: partial }]);
+        showError(message);
+      } else {
+        reply.remove();
+        showError(message);
+      }
     } finally {
-      input.disabled = false;
+      clearTimeout(timeout);
+      isSending = false;
+      if (submitButton) submitButton.disabled = false;
+      chatForm.removeAttribute('aria-busy');
+      messages.removeAttribute('aria-busy');
+      reply.removeAttribute('aria-busy');
+      messages.scrollTop = messages.scrollHeight;
       input.focus();
     }
   });
